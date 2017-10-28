@@ -48,7 +48,7 @@ def half_reduce_matrix_by(M: np.ndarray, x: int):
         M[i] = M[i] - local_div * M[x]
 
 
-def half_by(M: np.ndarray, x: int):
+def half_by(M: np.ndarray, N: np.ndarray, x: int):
     """!!!!!!!!!!!!!!!!!!!
     Resets all values different than matrix[x][x+1] in column with index x.
     This is accomplished by adding row with index x or subtracting it from other rows.
@@ -62,19 +62,23 @@ def half_by(M: np.ndarray, x: int):
     :param x: number of column to reduce, and row which will be use to perform reduction
     # waring! diagonal can't have any zeros!
     """
+
     size, _ = M.shape
-    scale_vector_by(M[x], M[x, x])
-    for i in range(size-1,x,-1):
-        local_div = M[i][x]
+    N[x, x] = 1.0
+    #scale_vector_by(M[x], M[x, x])
+    for i in range(size - 1, x, -1):
+        local_div = M[i][x]/M[x,x]
+
+        N[i, x] = local_div
         M[i] = M[i] - local_div * M[x]
 
 
 def LU(matrix: np.ndarray, output_vector: np.ndarray):
     """ Adds column output_vector to matrix. Calls _solve on concatenated Matrix"""
-    return _LU(np.c_[matrix, output_vector])
+    return LLU(np.c_[matrix, output_vector])
 
 
-def _LU(M: np.ndarray):
+def LLU(M: np.ndarray):
     """
     Reduces matrix to following state:
     |1   0 ... 0 y1|
@@ -84,12 +88,14 @@ def _LU(M: np.ndarray):
     :param M: square matrix + result column
     """
     size, _ = M.shape
+    N = np.zeros((size, size))
+    # for i in range(size):
+    #     scale_vector_by(M[i], np.max(np.absolute(M[i][:-1])))
     for i in range(size):
-        scale_vector_by(M[i], np.max(np.absolute(M[i][:-1])))
-    for i in range(size):
-        shuffle_rows(M, i)
-        half_by(M, i)
-    return M  # [:, -1]
+        #shuffle_rows(M, i)
+        half_by(M, N, i)
+    N[size-1,size-1]=1
+    return M, N  # [:, -1]
 
 
 t1 = np.array([[2, 2, -1, 1],
@@ -97,3 +103,9 @@ t1 = np.array([[2, 2, -1, 1],
                [3, -1, 4, -1],
                [1, 4, -2, 2]], dtype=np.float64)
 t2 = np.array([7, 3, 31, 2], dtype=np.float64)
+
+d1 = np.array([[5,3,2],[1,2,0],[3,0,4]],dtype=np.float64)
+
+x,y = LLU(d1)
+print(x)
+print(y)

@@ -13,6 +13,9 @@ def scale_vector_by(vector: np.ndarray, value: int):
     :param vector: 1-D ndarray
     :param value: division factor
     """
+    if np.isclose(0.0, value):
+        print("ooo chujjjjj")
+        return -1
     for i in range(len(vector)):
         vector[i] /= value
 
@@ -32,14 +35,14 @@ def reduce_matrix_by(matrix: np.ndarray, x: int):
     # waring! diagonal can't have any zeros!
     """
     size, _ = matrix.shape
+    scale_vector_by(matrix[x], matrix[x, x])
     for i in range(size):
-        scale_vector_by(matrix[x], matrix[x, x])
         if i is not x:
             local_div = matrix[i][x]
             matrix[i] = matrix[i] - local_div * matrix[x]
 
 
-def shuffle_rows(M: np.ndarray, position: int) -> (int, int) or None:
+def shuffle(M: np.ndarray, position: int) -> (int, int) or None:
     """
     Looks for biggest absolute value in i'th row and i'th column.
     Then, if biggest value is found in row x function swaps row i with row x.
@@ -114,9 +117,11 @@ def _solve(M: np.ndarray):
         scale_vector_by(M[i], np.max(np.absolute(M[i][:-1])))
     for i in range(size):
         # swap to have better numeric stability
-        swapped_column = shuffle_rows(M, i)
+        swapped_column = shuffle(M, i)
         if swapped_column:
             swapped_columns.append(swapped_column)
+        if np.isclose(M[i, i], 0.0):
+            print("ooooj")
         reduce_matrix_by(M, i)
     # swap all column back where they were
     for col1, col2 in swapped_columns[::-1]:

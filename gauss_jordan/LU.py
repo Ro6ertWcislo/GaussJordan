@@ -1,9 +1,10 @@
 import numpy as np
+from copy import deepcopy
 
 from gauss_jordan.gauss import scale_vector_by
 
 
-def shuffle_rows(M: np.ndarray, N, position: int) -> (int, int) or None:
+def shuffle_rows(M: np.ndarray, N, position: int, deviders: np.ndarray) -> (int, int) or None:
     """
     Looks for biggest absolute value in i'th column.
     Then, if biggest value is found in row x function swaps row i with row x.
@@ -26,13 +27,13 @@ def shuffle_rows(M: np.ndarray, N, position: int) -> (int, int) or None:
         # swap rows
         M[[max_row, position]] = M[[position, max_row]]
         N[[max_row, position]] = N[[position, max_row]]
+        deviders[max_row], deviders[position] = deviders[position], deviders[max_row]
 
 
 def half_reduce_matrix_by(M: np.ndarray, N: np.ndarray, x: int):
     """
     Zeros values below M[x,x]  in x'th column
     """
-
     size, _ = M.shape
     N[x, x] = 1.0
     for i in range(size - 1, x, -1):
@@ -41,49 +42,27 @@ def half_reduce_matrix_by(M: np.ndarray, N: np.ndarray, x: int):
         M[i] = M[i] - local_div * M[x]
 
 
-def LU(U: np.ndarray):
+def max_abs_val(A: np.ndarray):
+    index = np.argmax(np.absolute(A))
+    return A[index]
+
+
+def LU(A: np.ndarray):
     """
     Performs LU reduction.
+    deviders array is introduced,because scaling cause the determinant of the matrix change.
+    The deviders are saved there and the matrix is re-scaled at the end of the computation
     """
-    size, _ = U.shape
+    size, _ = A.shape
     L = np.zeros((size, size))
+    deviders = np.zeros(size)
+    U = deepcopy(A)
     for i in range(size):
-        scale_vector_by(U[i], np.max(np.absolute(U[i][:-1])))
+        devider = max_abs_val(U[i][:-1])
+        scale_vector_by(U[i], devider)
+        deviders[i] = devider
     for i in range(size):
-        shuffle_rows(U, L, i)
+        shuffle_rows(U, L, i, deviders)
         half_reduce_matrix_by(U, L, i)
     L[size - 1, size - 1] = 1
-    return L, U
-
-
-def dummyLU(U: np.ndarray):
-    """
-    Performs LU reduction.
-    """
-    size, _ = U.shape
-    L = np.zeros((size, size))
-    for i in range(size):
-        half_reduce_matrix_by(U, L, i)
-    L[size - 1, size - 1] = 1
-    return L, U
-
-
-t1 = np.array([[2, 2, -1, 1],
-               [-1, 1, 2, 3],
-               [3, -1, 4, -1],
-               [1, 4, -2, 2]], dtype=np.float64)
-t2 = np.array([7, 3, 31, 2], dtype=np.float64)
-
-d1 = np.array([[5, 3, 2], [1, 2, 0], [3, 0, 4]], dtype=np.float64)
-a = np.array([[2, -4, -1, 6],
-              [-1, 1, 4, -1],
-              [3, 8, 1, -4],
-              [7, 3, -1, 2]
-              ], dtype=np.float64)
-from copy import deepcopy
-
-v1 = deepcopy(a)
-from scipy.linalg import lu
-
-L1, U1 = LU(a)
-P, L2, U2 = lu(v1)
+    return L, deviders * U

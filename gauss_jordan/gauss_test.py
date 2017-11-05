@@ -11,8 +11,8 @@ t1 = np.array([[2, 2, -1, 1],
                [1, 4, -2, 2]], dtype=np.float64)
 t2 = np.array([7, 3, 31, 2], dtype=np.float64)
 size = 256
-d1 = np.empty([size, size])
-d2 = np.empty(size)
+d1 = np.empty([size, size],dtype=np.float64)
+d2 = np.empty(size, dtype=np.float64)
 
 for i, j in np.ndindex((size, size)):
     d1[i, j] = random.randrange(1, 100)
@@ -27,7 +27,7 @@ class GaussTest(unittest.TestCase):
             self.assertAlmostEqual(i, j)
 
     def test_randomized(self):
-        for i in range(10):
+        for i in range(4):
             print(i)
             size = 257
             d1 = np.empty([size, size])

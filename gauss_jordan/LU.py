@@ -4,7 +4,7 @@ from copy import deepcopy
 from gauss_jordan.gauss import scale_vector_by
 
 
-def shuffle_rows(M: np.ndarray, N, position: int, deviders: np.ndarray) -> (int, int) or None:
+def shuffle_rows(M: np.ndarray, N: np.ndarray, position: int, deviders: np.ndarray) -> (int, int) or None:
     """
     Looks for biggest absolute value in i'th column.
     Then, if biggest value is found in row x function swaps row i with row x.
@@ -42,11 +42,6 @@ def half_reduce_matrix_by(M: np.ndarray, N: np.ndarray, x: int):
         M[i] = M[i] - local_div * M[x]
 
 
-def max_abs_val(A: np.ndarray):
-    index = np.argmax(np.absolute(A))
-    return A[index]
-
-
 def LU(A: np.ndarray):
     """
     Performs LU reduction.
@@ -58,9 +53,10 @@ def LU(A: np.ndarray):
     deviders = np.zeros(size)
     U = deepcopy(A)
     for i in range(size):
-        devider = max_abs_val(U[i][:-1])
-        scale_vector_by(U[i], devider)
+        devider = np.max(np.absolute(U[i]))
         deviders[i] = devider
+        scale_vector_by(U[i], devider)
+
     for i in range(size):
         shuffle_rows(U, L, i, deviders)
         half_reduce_matrix_by(U, L, i)

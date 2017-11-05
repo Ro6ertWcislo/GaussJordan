@@ -13,9 +13,6 @@ def scale_vector_by(vector: np.ndarray, value: int):
     :param vector: 1-D ndarray
     :param value: division factor
     """
-    if np.isclose(0.0, value):
-        print("ooo chujjjjj")
-        return -1
     for i in range(len(vector)):
         vector[i] /= value
 
@@ -120,8 +117,6 @@ def _solve(M: np.ndarray):
         swapped_column = shuffle(M, i)
         if swapped_column:
             swapped_columns.append(swapped_column)
-        if np.isclose(M[i, i], 0.0):
-            print("ooooj")
         reduce_matrix_by(M, i)
     # swap all column back where they were
     for col1, col2 in swapped_columns[::-1]:
